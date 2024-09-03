@@ -1,0 +1,27 @@
+MINESWEEPER
+
+Game logic
+- class Point2D
+- class Tile
+    - mPoint2D 
+    - bool mFlag
+    - Inherit
+        - Bomb
+        - Numberedtile
+- class Board
+    - m2D array tiles
+    - Randomize bombs Mersenne-Twister "Random.h"
+        - Random coordinate 50x
+        - if tile is bomb redo
+    - Initializes numbertiles
+    - reveal()
+
+- class Game
+    - mBoard
+    - start()
+        - Get click position
+        - Populate bombs
+        - board.reveal( clickPos )
+        
+SDL2
+copy paste
