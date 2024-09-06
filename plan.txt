@@ -25,3 +25,15 @@ Game logic
         
 SDL2
 copy paste
+
+randomizeBombs
+    Preconditions:
+    - 40 bombs
+    - 3x3 area around initial spot has no bombs
+    - Check if clicked on the edge
+    - Pick random tile 40 times. if m_board[x][y].isBomb()
+    - initializeNumbertile(x, y)
+    
+initializeNumberTile:
+    - Add 1 around each tile if not off board
+    - Each tile around bomb -> Numberedtile++ | adds 1 to surrounding
