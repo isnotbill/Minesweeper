@@ -14,7 +14,9 @@
                 "-Wconversion",
                 "-Wsign-conversion",
                 "${file}",
-                "classes/Board.cpp",
+                "assets/Board.cpp",
+                "assets/Tile.cpp",
+                "assets/Texture.cpp",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
