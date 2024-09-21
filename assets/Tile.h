@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string>
 #include "Constants.h"
+#include <optional>
 
 // Initialize bombs first and then numbered tiles.
 
@@ -29,18 +30,18 @@ struct Point2D
 enum TileSprite
 {
     TILE_SPRITE_HIDDEN = 0,
-    TILE_SPRITE_REVEALED_0,
-    TILE_SPRITE_REVEALED_1,
-    TILE_SPRITE_REVEALED_2,
-    TILE_SPRITE_REVEALED_3,
-    TILE_SPRITE_REVEALED_4,
-    TILE_SPRITE_REVEALED_5,
-    TILE_SPRITE_REVEALED_6,
-    TILE_SPRITE_REVEALED_7,
-    TILE_SPRITE_REVEALED_8,
-    TILE_SPRITE_MARKED,
-    TILE_SPRITE_BOMB,
-    TILE_SPRITE_TOTAL
+    TILE_SPRITE_REVEALED_0, //1
+    TILE_SPRITE_REVEALED_1, //2
+    TILE_SPRITE_REVEALED_2, //3
+    TILE_SPRITE_REVEALED_3, //4
+    TILE_SPRITE_REVEALED_4, //5
+    TILE_SPRITE_REVEALED_5, //6
+    TILE_SPRITE_REVEALED_6, //7
+    TILE_SPRITE_REVEALED_7, //8
+    TILE_SPRITE_REVEALED_8, //9
+    TILE_SPRITE_MARKED, // 10
+    TILE_SPRITE_BOMB, // 11
+    TILE_SPRITE_TOTAL // 12
 };
 
 
@@ -62,13 +63,16 @@ public:
     void setPosition(int x, int y);
 
     // Handles mouse event
-    void handleEvent( SDL_Event* e );
+    std::optional<Tile*> handleEvent( SDL_Event* e );
 
     // Shows tile sprite
     void render();
 
     // Sets the current sprite
     void setSprite( TileSprite sprite );
+
+    // Gets the current sprite
+    TileSprite getSprite() const {return m_CurrentSprite;}
 
 
 protected:

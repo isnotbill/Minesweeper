@@ -1,6 +1,8 @@
 #include "Board.h"
 #include "Random.h"
 #include "Constants.h"
+#include <cassert>
+
 namespace Constants
 {
     constexpr int BOARD_SIZE = 16;
@@ -14,7 +16,8 @@ Board::Board()
     {
         for(std::size_t i = 0; i < Constants::BOARD_SIZE; i++)
         {
-            m_Board[j].push_back(new NumberedTile{static_cast<int>(j) * Constants::TILE_RENDERED_SIZE, static_cast<int>(i) * Constants::TILE_RENDERED_SIZE});
+            m_Board[j].push_back(new NumberedTile{static_cast<int>(j), static_cast<int>(i)});
+            //m_Board[j].push_back(new NumberedTile{static_cast<int>(j) * Constants::TILE_RENDERED_SIZE, static_cast<int>(i) * Constants::TILE_RENDERED_SIZE});
             m_Board[j][i]->display();
         }
     }
@@ -40,6 +43,7 @@ void Board::randomizeBombs(Point2D point)
         }
     }
 
+    m_firstClick = false;
 }
 
 void Board::incrementSurrounding(int x, int y)
@@ -76,6 +80,72 @@ bool Board::illegalIncrement(int x, int y) {
     return false;  // Tile is valid for incrementing
 }
 
+void Board::reveal(Point2D point)
+{
+    std::cout << point.x << ", " << point.y << '\n';
+    if(m_firstClick)
+    {
+        m_firstClick = false;
+        randomizeBombs(Point2D {point.x, point.y});
+        //Initialize all tile sprites
+    }
+    
+    if( m_Board[point.x][point.y]->isBomb() )
+    {
+        m_Board[point.x][point.y]->setSprite(TILE_SPRITE_BOMB);
+    }
+    else
+    {
+        NumberedTile* tile{dynamic_cast<NumberedTile*>(m_Board[point.x][point.y])};
+        int surrounding{ tile->getSurrounding() };
+        switch(surrounding)
+        {
+        case 0:
+            if(tile->getSprite() == TILE_SPRITE_REVEALED_0 || tile->getSprite() == TILE_SPRITE_MARKED)
+                break;
+            tile->setSprite(TILE_SPRITE_REVEALED_0);
+            
+            for ( int i = point.x - 1; i <= point.x + 1; ++i )
+            {
+                for (int j = point.y - 1; j <= point.y + 1; ++j )
+                {
+                    if ((i >= 0 && i < Constants::BOARD_SIZE && j >= 0 && j < Constants::BOARD_SIZE)) 
+                    {
+                        reveal(Point2D {i, j});
+                    }
+                }
+            }
+            break;
+        case 1:
+            tile->setSprite(TILE_SPRITE_REVEALED_1);
+            break;
+        case 2:
+            tile->setSprite(TILE_SPRITE_REVEALED_2);
+            break;
+        case 3:
+            tile->setSprite(TILE_SPRITE_REVEALED_3);
+            break;
+        case 4:
+            tile->setSprite(TILE_SPRITE_REVEALED_4);
+            break;
+        case 5:
+            tile->setSprite(TILE_SPRITE_REVEALED_5);
+            break;
+        case 6:
+            tile->setSprite(TILE_SPRITE_REVEALED_6);
+            break;
+        case 7:
+            tile->setSprite(TILE_SPRITE_REVEALED_7);
+            break;
+        case 8:
+            tile->setSprite(TILE_SPRITE_REVEALED_8);
+            break;
+        default:
+            assert("reveal() failed");
+        }
+    }
+}
+
 void Board::display()
 {
     for(std::size_t j = 0; j < Constants::BOARD_SIZE; j++)
@@ -100,7 +170,12 @@ void Board::handleEvents(SDL_Event* e)
     {
         for(std::size_t i = 0; i < Constants::BOARD_SIZE; i++)
         {
-            m_Board[j][i]->handleEvent(e);
+            std::optional<Tile*> tile = m_Board[j][i]->handleEvent(e);
+            if( tile )
+            {
+                Point2D point = tile.value()->getCoordinate();
+                reveal(point);
+            }
         }
     }
 }

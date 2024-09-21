@@ -43,7 +43,7 @@ bool gInitializedBombs{false};
 void Tile::render()
 {
     // Show current tile sprite
-    gTileSpriteSheetTexture.render( m_coordinate.x, m_coordinate.y, &gSpriteClips[ m_CurrentSprite ] );
+    gTileSpriteSheetTexture.render( m_coordinate.x * Constants::TILE_RENDERED_SIZE, m_coordinate.y * Constants::TILE_RENDERED_SIZE, &gSpriteClips[ m_CurrentSprite ] );
 }
 
 bool Texture::loadFromFile( std::string path )
@@ -187,13 +187,13 @@ bool loadMedia()
 
         // TILE_SPRITE_BOMB
         gSpriteClips[ TILE_SPRITE_BOMB ].x = 0;
-        gSpriteClips[ TILE_SPRITE_BOMB ].y = Constants::TILE_HEIGHT;
+        gSpriteClips[ TILE_SPRITE_BOMB ].y = Constants::TILE_HEIGHT * 2;
         gSpriteClips[ TILE_SPRITE_BOMB ].w = Constants::TILE_WIDTH;
         gSpriteClips[ TILE_SPRITE_BOMB ].h = Constants::TILE_HEIGHT;
 
         // TILE_SPRITE_FLAG
         gSpriteClips[ TILE_SPRITE_MARKED ].x = 0;
-        gSpriteClips[ TILE_SPRITE_MARKED ].y = Constants::TILE_HEIGHT * 2;
+        gSpriteClips[ TILE_SPRITE_MARKED ].y = Constants::TILE_HEIGHT;
         gSpriteClips[ TILE_SPRITE_MARKED ].w = Constants::TILE_WIDTH;
         gSpriteClips[ TILE_SPRITE_MARKED ].h = Constants::TILE_HEIGHT;
 
@@ -206,7 +206,7 @@ bool loadMedia()
         // TILE_SPRITE_REVEALED 1 TO 8
         for( int i = 2; i < 10; i++ )
         {
-            if(i < 4)
+            if(i < 6)
             {
                 gSpriteClips[i].x = Constants::TILE_WIDTH * (i-2);
                 gSpriteClips[i].y = Constants::TILE_HEIGHT * 3;
@@ -275,7 +275,10 @@ void start()
                     }
                     
                     // Handle tile events
-                    gBoard.handleEvents( &e );
+                    gBoard.handleEvents( &e ); //returns position
+                    //gBoard.reveal(position)
+                    //if true
+                    //gBoard.reveal();
                 }
 
                 // Clear screen

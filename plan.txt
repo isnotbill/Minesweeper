@@ -37,3 +37,88 @@ randomizeBombs
 initializeNumberTile:
     - Add 1 around each tile if not off board
     - Each tile around bomb -> Numberedtile++ | adds 1 to surrounding
+
+First click
+- Boolean window.cpp bool firstClick = true
+if (firstClick)
+    randomizeBombs(Point firstClickLocation)
+    firstclick = false
+
+Reveal tiles
+
+
+
+Flag Feature
+    - Right click to toggle flag state
+    - Cannot left click if the tile is a flag
+
+std::optional<Tile*> Tile::handleEvent( SDL_Event* e )
+{
+    // If mouse event happened
+    if( e->type == SDL_MOUSEBUTTONDOWN )
+    {
+        // Get mouse position
+        int x, y;
+        SDL_GetMouseState( &x, &y );
+
+        // Check if mouse is in tile
+        bool inside = true;
+
+        // Mouse is left of the tile
+        if( x < m_coordinate.x * Constants::TILE_RENDERED_SIZE )
+        {
+            inside = false;
+        }
+        // Mouse is right of the tile
+        else if( x > m_coordinate.x * Constants::TILE_RENDERED_SIZE + Constants::TILE_RENDERED_SIZE )
+        {
+            inside = false;
+        }
+        // Mouse above the tile
+        else if( y < m_coordinate.y * Constants::TILE_RENDERED_SIZE)
+        {
+            inside = false;
+        }
+        // Mouse below the tile
+        else if( y > m_coordinate.y * Constants::TILE_RENDERED_SIZE + Constants::TILE_RENDERED_SIZE )
+        {
+            inside = false;
+        }
+
+        
+        // Mouse is inside tile
+        if( inside )
+        {
+            // For simplicity, toggle between hidden and revealed
+            if( m_CurrentSprite == TILE_SPRITE_HIDDEN )
+            {
+                if( e->button.button == SDL_BUTTON_LEFT )
+                {
+                    // You can set the revealed sprite based on your game logic
+                    //m_CurrentSprite = TILE_SPRITE_REVEALED_0;
+                    //Board::reveal(location )
+                    //-> TILE_SPRITE_REVEALED_0; // Example: revealed with 0 adjacent mines
+                    // return true;
+                    // return *this;
+                    std::cout<< "Returning this";
+                    return this;
+                }
+                if( e->button.button == SDL_BUTTON_RIGHT )
+                {
+                    m_CurrentSprite == TILE_SPRITE_MARKED;                    
+                }
+            }
+            /*
+            else if(m_CurrentSprite == TILE_SPRITE_MARKED)
+            {
+                if( e->button.button == SDL_BUTTON_RIGHT )
+                {
+                    m_CurrentSprite == TILE_SPRITE_HIDDEN;                    
+                }
+            }
+            */
+        }
+
+    }
+    return std::nullopt;
+}
