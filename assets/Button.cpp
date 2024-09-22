@@ -1,49 +1,52 @@
+#include <cassert>
+#include <iostream>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <stdio.h>
+#include <string>
+#include "Constants.h"
 #include "Tile.h"
 #include "Texture.h"
-#include "Constants.h"
-#include <iostream>
-#include <optional>
-#include "../soundeffects/soundeffect.h"
+#include "Button.h"
+#include "globals.h"
 
-// Bomb class definitions
-bool Bomb::isBomb()
-{
-    return true;
-};
+Button::Button(int x, int y)
+    : m_coordinate{x,y}
+{}
 
-void Bomb::display()
+bool Button::setTexture( std::string path )
 {
-    std::cout << m_coordinate << " is a Bomb.\n";
+
+    return ( m_texture.loadFromFile( path.c_str() ) );
 }
 
-// NumberedTile class definitions
-int NumberedTile::getSurrounding() const // gets m_bombSurrounding
+void Button::render()
 {
-    return m_bombSurrounding;
+    
+    SDL_Rect renderTile;
+    
+    renderTile.w = Constants::TILE_RENDERED_SIZE * 2;
+    renderTile.h = Constants::TILE_RENDERED_SIZE * 2;
+    
+    if(gWindow.isFullScreen() )
+    {
+        renderTile.x = m_coordinate.x + Constants::BOARD_OFFSET - Constants::TILE_RENDERED_SIZE;
+        renderTile.y = m_coordinate.y + Constants::TILE_RENDERED_SIZE;
+    }
+    else
+    {
+        renderTile.x = m_coordinate.x - Constants::TILE_RENDERED_SIZE;
+        renderTile.y = m_coordinate.y + Constants::TILE_RENDERED_SIZE;
+    }
+
+    // Render to screen
+    SDL_RenderCopy( gRenderer, m_texture.getTexture(), NULL, &renderTile );
+
+    
 }
 
-bool NumberedTile::isBomb()
-{
-    return false;
-};
-
-void NumberedTile::display()
-{
-    std::cout << m_coordinate << "with " << m_bombSurrounding << " bombs surrounding" << " is a NumberedTile.\n";
-};
-
-void NumberedTile::increment()
-{
-    m_bombSurrounding = m_bombSurrounding + 1;
-}
-
-void Tile::setPosition( int x, int y )
-{
-    m_coordinate.x = x;
-    m_coordinate.y = y;
-}
-
-std::optional<Tile*> Tile::handleEvent( SDL_Event* e, int offset, bool fullscreen )
+/*
+void Button::handleEvent(SDL_Event* e)
 {
     if(!fullscreen)
     {
@@ -80,8 +83,6 @@ std::optional<Tile*> Tile::handleEvent( SDL_Event* e, int offset, bool fullscree
         {
             inside = false;
         }
-
-        
         // Mouse is inside tile
         if( inside )
         {
@@ -90,14 +91,7 @@ std::optional<Tile*> Tile::handleEvent( SDL_Event* e, int offset, bool fullscree
             {
                 if( e->button.button == SDL_BUTTON_LEFT )
                 {
-                    // You can set the revealed sprite based on your game logic
-                    //m_CurrentSprite = TILE_SPRITE_REVEALED_0;
-                    //Board::reveal(location )
-                    //-> TILE_SPRITE_REVEALED_0; // Example: revealed with 0 adjacent mines
-                    // return true;
-                    // return *this;
-                    //std::cout<< "Returning this" << " " << m_Revealed;
-                    return this;
+
                 }
                 if( e->button.button == SDL_BUTTON_RIGHT )
                 {
@@ -118,10 +112,6 @@ std::optional<Tile*> Tile::handleEvent( SDL_Event* e, int offset, bool fullscree
         }
 
     }
-    return std::nullopt;
+    
 }
-
-void Tile::setSprite( TileSprite sprite )
-{
-    m_CurrentSprite = sprite;
-}
+*/

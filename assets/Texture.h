@@ -28,6 +28,7 @@ class Texture
         // Gets image dimensions
         int getWidth();
         int getHeight();
+        SDL_Texture* getTexture() const { return mTexture; }
 
     private:
         // The actual hardware texture

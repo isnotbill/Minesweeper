@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string>
 #include "Constants.h"
+#include "../soundeffects/soundeffect.h"
 #include <optional>
 
 // Initialize bombs first and then numbered tiles.
@@ -41,7 +42,8 @@ enum TileSprite
     TILE_SPRITE_REVEALED_8, //9
     TILE_SPRITE_MARKED, // 10
     TILE_SPRITE_BOMB, // 11
-    TILE_SPRITE_TOTAL // 12
+    TILE_SPRITE_BOMB_EXPLODED, //12
+    TILE_SPRITE_TOTAL // 13
 };
 
 
@@ -63,7 +65,7 @@ public:
     void setPosition(int x, int y);
 
     // Handles mouse event
-    std::optional<Tile*> handleEvent( SDL_Event* e );
+    std::optional<Tile*> handleEvent( SDL_Event* e, int, bool );
 
     // Shows tile sprite
     void render();
@@ -74,12 +76,15 @@ public:
     // Gets the current sprite
     TileSprite getSprite() const {return m_CurrentSprite;}
 
+    bool getRevealed() const {return m_Revealed;}
+    void setRevealed(bool boolean) {m_Revealed = boolean;}
 
 protected:
     Point2D m_coordinate;
 
     TileSprite m_CurrentSprite;
-    SDL_Point mPosition;
+
+    bool m_Revealed{false}; // Check if the tile is revealed as a NumberTile
 
 };
 

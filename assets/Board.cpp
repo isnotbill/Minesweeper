@@ -1,13 +1,9 @@
 #include "Board.h"
 #include "Random.h"
 #include "Constants.h"
+#include "Tile.h"
 #include <cassert>
-
-namespace Constants
-{
-    constexpr int BOARD_SIZE = 16;
-    constexpr int BOMBS_MAX = 40;
-}
+#include "../soundeffects/soundeffect.h"
 
 Board::Board()
         : m_Board{std::vector< std::vector<Tile*> >(Constants::BOARD_SIZE)}
@@ -18,10 +14,12 @@ Board::Board()
         {
             m_Board[j].push_back(new NumberedTile{static_cast<int>(j), static_cast<int>(i)});
             //m_Board[j].push_back(new NumberedTile{static_cast<int>(j) * Constants::TILE_RENDERED_SIZE, static_cast<int>(i) * Constants::TILE_RENDERED_SIZE});
-            m_Board[j][i]->display();
+            //m_Board[j][i]->display();
         }
     }
 };
+
+
 
 void Board::randomizeBombs(Point2D point)
 {
@@ -82,29 +80,41 @@ bool Board::illegalIncrement(int x, int y) {
 
 void Board::reveal(Point2D point)
 {
-    std::cout << point.x << ", " << point.y << '\n';
+
     if(m_firstClick)
     {
         m_firstClick = false;
         randomizeBombs(Point2D {point.x, point.y});
         //Initialize all tile sprites
     }
-    
+
+    if (m_Board[point.x][point.y]->getRevealed())
+    {
+        return; //If the tile is already revealed, return early.
+    }
+
     if( m_Board[point.x][point.y]->isBomb() )
     {
-        m_Board[point.x][point.y]->setSprite(TILE_SPRITE_BOMB);
+        m_Board[point.x][point.y]->setSprite(TILE_SPRITE_BOMB_EXPLODED);
+        Mix_PlayChannel(-1, gBombSound, 0);
     }
+
     else
     {
         NumberedTile* tile{dynamic_cast<NumberedTile*>(m_Board[point.x][point.y])};
         int surrounding{ tile->getSurrounding() };
+
         switch(surrounding)
         {
         case 0:
             if(tile->getSprite() == TILE_SPRITE_REVEALED_0 || tile->getSprite() == TILE_SPRITE_MARKED)
                 break;
+                
             tile->setSprite(TILE_SPRITE_REVEALED_0);
-            
+            tile->setRevealed(true);
+            ++m_tilesRevealed;
+            ++m_currentTilesRevealed;
+
             for ( int i = point.x - 1; i <= point.x + 1; ++i )
             {
                 for (int j = point.y - 1; j <= point.y + 1; ++j )
@@ -117,28 +127,52 @@ void Board::reveal(Point2D point)
             }
             break;
         case 1:
+            tile->setRevealed(true);
             tile->setSprite(TILE_SPRITE_REVEALED_1);
+            m_tilesRevealed += 1;
+            ++m_currentTilesRevealed;
             break;
         case 2:
+            tile->setRevealed(true);
             tile->setSprite(TILE_SPRITE_REVEALED_2);
+            m_tilesRevealed += 1;
+            ++m_currentTilesRevealed;
             break;
         case 3:
+            tile->setRevealed(true);
             tile->setSprite(TILE_SPRITE_REVEALED_3);
+            m_tilesRevealed += 1;
+            ++m_currentTilesRevealed;
             break;
         case 4:
+            tile->setRevealed(true);
             tile->setSprite(TILE_SPRITE_REVEALED_4);
+            m_tilesRevealed += 1;
+            ++m_currentTilesRevealed;
             break;
         case 5:
+            tile->setRevealed(true);
             tile->setSprite(TILE_SPRITE_REVEALED_5);
+            m_tilesRevealed += 1;
+            ++m_currentTilesRevealed;
             break;
         case 6:
+            tile->setRevealed(true);
             tile->setSprite(TILE_SPRITE_REVEALED_6);
+            m_tilesRevealed += 1;
+            ++m_currentTilesRevealed;
             break;
         case 7:
+            tile->setRevealed(true);
             tile->setSprite(TILE_SPRITE_REVEALED_7);
+            m_tilesRevealed += 1;
+            ++m_currentTilesRevealed;
             break;
         case 8:
+            tile->setRevealed(true);
             tile->setSprite(TILE_SPRITE_REVEALED_8);
+            m_tilesRevealed += 1;
+            ++m_currentTilesRevealed;
             break;
         default:
             assert("reveal() failed");
@@ -146,35 +180,52 @@ void Board::reveal(Point2D point)
     }
 }
 
-void Board::display()
+void Board::showBombs()
 {
     for(std::size_t j = 0; j < Constants::BOARD_SIZE; j++)
     {
         for(std::size_t i = 0; i < Constants::BOARD_SIZE; i++)
         {
-            if(m_Board[j][i]->isBomb())
-                std::cout << " b ";
-            else
+            if(m_Board[j][i]->isBomb() && m_Board[j][i]->getSprite() != TILE_SPRITE_BOMB_EXPLODED)
             {
-                NumberedTile* tile{dynamic_cast<NumberedTile*>(m_Board[j][i])};
-                std::cout << " " << tile->getSurrounding() << " ";                
+                m_Board[j][i]->setSprite(TILE_SPRITE_BOMB);
             }
         }
-        std::cout << '\n';
     }
 }
 
-void Board::handleEvents(SDL_Event* e)
+
+void Board::handleEvents(SDL_Event* e, int offset, bool fullscreen)
 {
     for(std::size_t j = 0; j < Constants::BOARD_SIZE; j++)
     {
         for(std::size_t i = 0; i < Constants::BOARD_SIZE; i++)
         {
-            std::optional<Tile*> tile = m_Board[j][i]->handleEvent(e);
+            std::optional<Tile*> tile = m_Board[j][i]->handleEvent(e, offset, fullscreen);
             if( tile )
             {
+                if(tile.value()->isBomb())
+                {
+                    m_gameOver = true;
+                }
                 Point2D point = tile.value()->getCoordinate();
+
+                // Reset the counter before revealing tiles
+                m_currentTilesRevealed = 0;
+
                 reveal(point);
+                std::cout << m_currentTilesRevealed << std::endl;
+                // Decide which sound to play
+                if (m_currentTilesRevealed == 1)
+                {
+                    Mix_PlayChannel(-1, gClickSound, 0);
+                    std::cout << "Played Click\n";
+                }
+                else if (m_currentTilesRevealed > 1)
+                {
+                    Mix_PlayChannel(-1, gRevealSound, 0);
+                    std::cout << "Played Revealed\n";
+                }
             }
         }
     }
@@ -189,4 +240,13 @@ void Board::renderTiles()
             m_Board[j][i]->render();
         }
     }
+}
+
+bool Board::win()
+{
+    if(m_tilesRevealed == Constants::TOTAL_TILES - Constants::BOMBS_MAX)
+    {
+        return true;
+    }
+    return false;
 }
