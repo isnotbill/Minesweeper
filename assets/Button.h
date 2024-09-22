@@ -15,7 +15,7 @@ class Button
 {
 public:
     Button() = default;
-    Button(int x, int y);
+    Button(int x, int y, int w, int h);
 
     Texture getTexture() const { return m_texture; }
     Point2D getPoint() const { return m_coordinate; }
@@ -24,9 +24,11 @@ public:
 
     void render();
 
-    void handleEvent(SDL_Event*);
+    int handleEvent(SDL_Event*);
 
 private:
+    int m_width;
+    int m_height;
     Texture m_texture;
     Point2D m_coordinate;
 };

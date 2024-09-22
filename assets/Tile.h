@@ -76,6 +76,8 @@ public:
     // Gets the current sprite
     TileSprite getSprite() const {return m_CurrentSprite;}
 
+    void setAlpha(Uint8 alpha);
+
     bool getRevealed() const {return m_Revealed;}
     void setRevealed(bool boolean) {m_Revealed = boolean;}
 
@@ -86,6 +88,7 @@ protected:
 
     bool m_Revealed{false}; // Check if the tile is revealed as a NumberTile
 
+    Uint8 mAlpha = 255; // Fully opaque by default
 };
 
 class Bomb : public Tile 

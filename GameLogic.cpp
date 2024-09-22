@@ -11,7 +11,6 @@
 #include "assets/Button.h"
 
 
-
 // Starts up SDL and creates window
 bool init();
 
@@ -30,98 +29,22 @@ SDL_Renderer* gRenderer{nullptr};
 // Tile sprites
 SDL_Rect gSpriteClips[ TILE_SPRITE_TOTAL ];
 Texture gTileSpriteSheetTexture;
+Texture gWinTexture;
+Texture gLoseTexture;
 
 // Game Board
 Board gBoard{};
 
 // Try again button 384x384
-Button gTryAgainButton{Constants::SCREEN_WIDTH/2, Constants::SCREEN_HEIGHT/2};
+Button gTryAgainButton{Constants::SCREEN_WIDTH/2 - Constants::TILE_RENDERED_SIZE, Constants::SCREEN_HEIGHT/2 + Constants::TILE_RENDERED_SIZE * 2, Constants::TILE_RENDERED_SIZE * 2, Constants::TILE_RENDERED_SIZE * 2};
 
 // Sound
 Mix_Chunk* gFlagSound{nullptr};
 Mix_Chunk* gClickSound{nullptr};
 Mix_Chunk* gRevealSound{nullptr};
 Mix_Chunk* gBombSound{nullptr};
-
-void Tile::render()
-{
-    // Show current tile sprite
-    if(gWindow.isFullScreen() )
-    {
-        gTileSpriteSheetTexture.render( m_coordinate.x * Constants::TILE_RENDERED_SIZE + Constants::BOARD_OFFSET, m_coordinate.y * Constants::TILE_RENDERED_SIZE, &gSpriteClips[ m_CurrentSprite ] );
-    }
-    else
-    {
-        
-        gTileSpriteSheetTexture.render( m_coordinate.x * Constants::TILE_RENDERED_SIZE, m_coordinate.y * Constants::TILE_RENDERED_SIZE, &gSpriteClips[ m_CurrentSprite ] );
-    }
-
-}
-
-bool Texture::loadFromFile( std::string path )
-{
-    // Get rid of preexisting texture
-    free();
-
-    // The final texture
-    SDL_Texture* newTexture = NULL;
-
-    // Load image at specified path
-    SDL_Surface* loadedSurface = IMG_Load( path.c_str() );
-    if( loadedSurface == NULL )
-    {
-        printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
-    }
-    else
-    {
-        // Create texture from surface pixels
-        newTexture = SDL_CreateTextureFromSurface( gRenderer, loadedSurface );
-        if( newTexture == NULL )
-        {
-            printf( "Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
-        }
-        else
-        {
-            // Get image dimensions
-            mWidth = loadedSurface->w;
-            mHeight = loadedSurface->h;
-        }
-
-        // Get rid of old loaded surface
-        SDL_FreeSurface( loadedSurface );
-    }
-
-    // Return success
-    mTexture = newTexture;
-    return mTexture != NULL;
-}
-
-void Texture::free()
-{
-    // Free texture if it exists
-    if( mTexture != NULL )
-    {
-        SDL_DestroyTexture( mTexture );
-        mTexture = NULL;
-        mWidth = 0;
-        mHeight = 0;
-    }
-}
-
-void Texture::render( int x, int y, SDL_Rect* clip )
-{
-    // Set rendering space and render to screen
-    //SDL_Rect renderQuad = { x, y, mWidth, mHeight };
-
-    SDL_Rect renderTile;
-    renderTile.x = x;
-    renderTile.y = y;
-    renderTile.w = Constants::TILE_RENDERED_SIZE;
-    renderTile.h = Constants::TILE_RENDERED_SIZE;
-
-    // Render to screen
-    SDL_RenderCopy( gRenderer, mTexture, clip, &renderTile );
-}
+Mix_Chunk* gVictorySound{nullptr};
+Mix_Chunk* gDefeatSound{nullptr};
 
 bool LWindow::init()
 {
@@ -267,7 +190,7 @@ bool init()
             {
                 // Initialize renderer color
                 SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-
+                SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
                 // Initialize PNG loading
                 int imgFlags = IMG_INIT_PNG;
                 if( !( IMG_Init( imgFlags ) & imgFlags ) )
@@ -297,6 +220,25 @@ bool loadMedia()
     // Loading success flag
     bool success = true;
 
+    // Loading button texture
+    if( !gTryAgainButton.setTexture( "resources/retrybutton.png" ) )
+    {
+        printf( "Failed to load retry button texture!\n" );
+        success = false;
+    }
+
+    if( !gWinTexture.loadFromFile( "resources/crown.png" ) )
+    {
+        printf( "Failed to load win texture!\n" );
+        success = false;
+    }
+
+    if( !gLoseTexture.loadFromFile( "resources/skull.png" ) )
+    {
+        printf( "Failed to load lose texture!\n" );
+        success = false;
+    }
+    
     // Load spritesheet texture
     if( !gTileSpriteSheetTexture.loadFromFile( "resources/spritesheet.png" ) )
     {
@@ -305,61 +247,52 @@ bool loadMedia()
     }
     else
     {
-        if( !gTryAgainButton.setTexture( "resources/retrybutton.png" ) )
+        // Set sprite clips
+        // TILE_SPRITE_HIDDEN
+        gSpriteClips[ TILE_SPRITE_HIDDEN ].x = 0;
+        gSpriteClips[ TILE_SPRITE_HIDDEN ].y = 0;
+        gSpriteClips[ TILE_SPRITE_HIDDEN ].w = Constants::TILE_WIDTH;
+        gSpriteClips[ TILE_SPRITE_HIDDEN ].h = Constants::TILE_HEIGHT;
+
+        // TILE_SPRITE_BOMB
+        gSpriteClips[ TILE_SPRITE_BOMB ].x = 0;
+        gSpriteClips[ TILE_SPRITE_BOMB ].y = Constants::TILE_HEIGHT * 2;
+        gSpriteClips[ TILE_SPRITE_BOMB ].w = Constants::TILE_WIDTH;
+        gSpriteClips[ TILE_SPRITE_BOMB ].h = Constants::TILE_HEIGHT;
+
+        // TILE_SPRITE_BOMB_EXPLODED
+        gSpriteClips[ TILE_SPRITE_BOMB_EXPLODED ].x = Constants::TILE_WIDTH;
+        gSpriteClips[ TILE_SPRITE_BOMB_EXPLODED ].y = Constants::TILE_HEIGHT * 2;
+        gSpriteClips[ TILE_SPRITE_BOMB_EXPLODED ].w = Constants::TILE_WIDTH;
+        gSpriteClips[ TILE_SPRITE_BOMB_EXPLODED ].h = Constants::TILE_HEIGHT;            
+
+        // TILE_SPRITE_FLAG
+        gSpriteClips[ TILE_SPRITE_MARKED ].x = 0;
+        gSpriteClips[ TILE_SPRITE_MARKED ].y = Constants::TILE_HEIGHT;
+        gSpriteClips[ TILE_SPRITE_MARKED ].w = Constants::TILE_WIDTH;
+        gSpriteClips[ TILE_SPRITE_MARKED ].h = Constants::TILE_HEIGHT;
+
+        // TILE_SPRITE_REVEALED_0
+        gSpriteClips[ TILE_SPRITE_REVEALED_0 ].x = Constants::TILE_WIDTH * 3;
+        gSpriteClips[ TILE_SPRITE_REVEALED_0 ].y = Constants::TILE_HEIGHT * 2;
+        gSpriteClips[ TILE_SPRITE_REVEALED_0 ].w = Constants::TILE_WIDTH;
+        gSpriteClips[ TILE_SPRITE_REVEALED_0 ].h = Constants::TILE_HEIGHT;
+
+        // TILE_SPRITE_REVEALED 1 TO 8
+        for( int i = 2; i < 10; i++ )
         {
-            printf( "Failed to load retry button texture!\n" );
-            success = false;
-        }
-        else
-        {
-
-            // Set sprite clips
-            // TILE_SPRITE_HIDDEN
-            gSpriteClips[ TILE_SPRITE_HIDDEN ].x = 0;
-            gSpriteClips[ TILE_SPRITE_HIDDEN ].y = 0;
-            gSpriteClips[ TILE_SPRITE_HIDDEN ].w = Constants::TILE_WIDTH;
-            gSpriteClips[ TILE_SPRITE_HIDDEN ].h = Constants::TILE_HEIGHT;
-
-            // TILE_SPRITE_BOMB
-            gSpriteClips[ TILE_SPRITE_BOMB ].x = 0;
-            gSpriteClips[ TILE_SPRITE_BOMB ].y = Constants::TILE_HEIGHT * 2;
-            gSpriteClips[ TILE_SPRITE_BOMB ].w = Constants::TILE_WIDTH;
-            gSpriteClips[ TILE_SPRITE_BOMB ].h = Constants::TILE_HEIGHT;
-
-            // TILE_SPRITE_BOMB_EXPLODED
-            gSpriteClips[ TILE_SPRITE_BOMB_EXPLODED ].x = Constants::TILE_WIDTH;
-            gSpriteClips[ TILE_SPRITE_BOMB_EXPLODED ].y = Constants::TILE_HEIGHT * 2;
-            gSpriteClips[ TILE_SPRITE_BOMB_EXPLODED ].w = Constants::TILE_WIDTH;
-            gSpriteClips[ TILE_SPRITE_BOMB_EXPLODED ].h = Constants::TILE_HEIGHT;            
-
-            // TILE_SPRITE_FLAG
-            gSpriteClips[ TILE_SPRITE_MARKED ].x = 0;
-            gSpriteClips[ TILE_SPRITE_MARKED ].y = Constants::TILE_HEIGHT;
-            gSpriteClips[ TILE_SPRITE_MARKED ].w = Constants::TILE_WIDTH;
-            gSpriteClips[ TILE_SPRITE_MARKED ].h = Constants::TILE_HEIGHT;
-
-            // TILE_SPRITE_REVEALED_0
-            gSpriteClips[ TILE_SPRITE_REVEALED_0 ].x = Constants::TILE_WIDTH * 3;
-            gSpriteClips[ TILE_SPRITE_REVEALED_0 ].y = Constants::TILE_HEIGHT * 2;
-            gSpriteClips[ TILE_SPRITE_REVEALED_0 ].w = Constants::TILE_WIDTH;
-            gSpriteClips[ TILE_SPRITE_REVEALED_0 ].h = Constants::TILE_HEIGHT;
-
-            // TILE_SPRITE_REVEALED 1 TO 8
-            for( int i = 2; i < 10; i++ )
+            if(i < 6)
             {
-                if(i < 6)
-                {
-                    gSpriteClips[i].x = Constants::TILE_WIDTH * (i-2);
-                    gSpriteClips[i].y = Constants::TILE_HEIGHT * 3;
-                }
-                else
-                {
-                    gSpriteClips[i].x = Constants::TILE_WIDTH * (i-6);
-                    gSpriteClips[i].y = Constants::TILE_HEIGHT * 4;
-                }
-                gSpriteClips[ i ].w = Constants::TILE_WIDTH;
-                gSpriteClips[ i ].h = Constants::TILE_HEIGHT;
+                gSpriteClips[i].x = Constants::TILE_WIDTH * (i-2);
+                gSpriteClips[i].y = Constants::TILE_HEIGHT * 3;
             }
+            else
+            {
+                gSpriteClips[i].x = Constants::TILE_WIDTH * (i-6);
+                gSpriteClips[i].y = Constants::TILE_HEIGHT * 4;
+            }
+            gSpriteClips[ i ].w = Constants::TILE_WIDTH;
+            gSpriteClips[ i ].h = Constants::TILE_HEIGHT;
         }
     }
 
@@ -367,11 +300,13 @@ bool loadMedia()
     gClickSound = Mix_LoadWAV( "soundeffects/click.wav" );
     gRevealSound = Mix_LoadWAV( "soundeffects/reveal.wav" );
     gBombSound = Mix_LoadWAV( "soundeffects/bomb.mp3" );
+    gVictorySound = Mix_LoadWAV( "soundeffects/victory.wav" );
+    gDefeatSound = Mix_LoadWAV( "soundeffects/defeat.wav" );
 
 
 	if(!gFlagSound || !gClickSound || !gRevealSound || !gBombSound)
 	{
-		printf( "Failed to load high sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+		printf( "Failed to load sound effects. SDL_mixer Error: %s\n", Mix_GetError() );
 		success = false;
 	}
     else
@@ -379,6 +314,8 @@ bool loadMedia()
         Mix_VolumeChunk(gFlagSound, MIX_MAX_VOLUME * 0.4);
         Mix_VolumeChunk(gClickSound, MIX_MAX_VOLUME * 0.6);
         Mix_VolumeChunk(gBombSound, MIX_MAX_VOLUME * 0.6);
+        Mix_VolumeChunk(gVictorySound, MIX_MAX_VOLUME * 0.2);
+        Mix_VolumeChunk(gDefeatSound, MIX_MAX_VOLUME * 0.2);
     }
 
     return success;
@@ -404,6 +341,12 @@ void close()
 
 void start()
 {
+    // Overlay variables
+    bool startFadeOut = false;
+    Uint8 overlayAlpha = 0;     // Start from fully transparent
+    Uint8 maxOverlayAlpha = 180; // Max alpha value (adjust for desired darkness)
+    int fadeOutSpeed = 4;        // Adjust the speed of the fade-out
+
     // Start up SDL and create window
     if( !init() )
     {
@@ -420,6 +363,15 @@ void start()
         {   
             // Main loop flag
             bool quit = false;
+
+            // Win flag
+            bool win = false;
+
+            // Modifiable offset if window is minimized
+            int offset = Constants::BOARD_OFFSET;
+
+            //Flag to check if the victory/defeat sounce has been played to avoid infinite replays
+            bool soundPlayed = false;
 
             // Event handler
             SDL_Event e;
@@ -442,26 +394,82 @@ void start()
                     {
                         gBoard.handleEvents( &e, Constants::BOARD_OFFSET, gWindow.isFullScreen());
                     }
+                    else
+                    {
+                        if (!startFadeOut)
+                        {
+                            startFadeOut = true;
+                            overlayAlpha = 0;
+                        }
+                        if(gTryAgainButton.handleEvent( &e ) == SDL_BUTTON_LEFT)
+                        {  
+                            Mix_PlayChannel(-1, gClickSound, 0);
+                            gBoard = {};
+                            overlayAlpha = 0;
+                            win = false;
+                            soundPlayed = false;
+                        }
+                    }
                 }
                 if( !gWindow.isMinimized() )
                 {
+                    offset = gWindow.isFullScreen() ? Constants::BOARD_OFFSET : 0;
+
                     // Clear screen
                     SDL_SetRenderDrawColor( gRenderer, 0x11, 0x26, 0x35, 255 );
                     SDL_RenderClear( gRenderer );
 
                     // Render tiles
                     gBoard.renderTiles();
-                    if(gBoard.win())
+
+                    // If game over, update the fade-out effect
+                    if (gBoard.win())
                     {
-                        gBoard = {};
+                        win = true;
                     }
+                    
                     if (gBoard.getGameOver())
                     {
                         gBoard.showBombs();
-                        gTryAgainButton.render();
-                        //gBoard = {};
-                    }
+                        // Increase overlay alpha value
+                        if (overlayAlpha < maxOverlayAlpha) {
+                            overlayAlpha = (overlayAlpha + fadeOutSpeed > maxOverlayAlpha) ? maxOverlayAlpha : overlayAlpha + fadeOutSpeed;
+                        }
 
+                        // Render the semi-transparent overlay
+                        SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
+                        SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, overlayAlpha);
+                        
+                        SDL_Rect overlayRect = {offset, 0, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT};
+                        SDL_RenderFillRect(gRenderer, &overlayRect);
+
+                        
+
+                        // Once fade-out is complete, render the retry button
+                        if (overlayAlpha >= maxOverlayAlpha) {
+                            gTryAgainButton.render();
+                            if(win)
+                            {
+                                gWinTexture.render(Constants::SCREEN_WIDTH/2 - Constants::TILE_RENDERED_SIZE * 2.5 + offset, Constants::SCREEN_HEIGHT/2 - Constants::TILE_RENDERED_SIZE * 3.5, Constants::TILE_RENDERED_SIZE * 5, Constants::TILE_RENDERED_SIZE * 5, NULL);
+                            }
+                            else
+                            {
+                                gLoseTexture.render(Constants::SCREEN_WIDTH/2 - Constants::TILE_RENDERED_SIZE * 2 + offset, Constants::SCREEN_HEIGHT/2 - Constants::TILE_RENDERED_SIZE * 3, Constants::TILE_RENDERED_SIZE * 4, Constants::TILE_RENDERED_SIZE * 4, NULL);
+                            }
+                            if (!soundPlayed)
+                            {
+                                soundPlayed = true;
+                                if (win)
+                                {
+                                    Mix_PlayChannel( -1, gVictorySound, 0 );
+                                }
+                                else
+                                {
+                                    Mix_PlayChannel( -1, gDefeatSound, 0 ); 
+                                }                                
+                            }
+                        }
+                    }
 
                     // Update screen
                     SDL_RenderPresent( gRenderer );

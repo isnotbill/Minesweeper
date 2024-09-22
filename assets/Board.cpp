@@ -246,6 +246,7 @@ bool Board::win()
 {
     if(m_tilesRevealed == Constants::TOTAL_TILES - Constants::BOMBS_MAX)
     {
+        m_gameOver = true;
         return true;
     }
     return false;

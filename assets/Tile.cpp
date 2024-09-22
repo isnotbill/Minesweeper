@@ -4,6 +4,7 @@
 #include <iostream>
 #include <optional>
 #include "../soundeffects/soundeffect.h"
+#include "globals.h"
 
 // Bomb class definitions
 bool Bomb::isBomb()
@@ -119,6 +120,21 @@ std::optional<Tile*> Tile::handleEvent( SDL_Event* e, int offset, bool fullscree
 
     }
     return std::nullopt;
+}
+
+void Tile::render()
+{
+    // Show current tile sprite
+    if(gWindow.isFullScreen() )
+    {
+        gTileSpriteSheetTexture.render( m_coordinate.x * Constants::TILE_RENDERED_SIZE + Constants::BOARD_OFFSET, m_coordinate.y * Constants::TILE_RENDERED_SIZE, Constants::TILE_RENDERED_SIZE, Constants::TILE_RENDERED_SIZE,&gSpriteClips[ m_CurrentSprite ] );
+    }
+    else
+    {
+        
+        gTileSpriteSheetTexture.render( m_coordinate.x * Constants::TILE_RENDERED_SIZE, m_coordinate.y * Constants::TILE_RENDERED_SIZE, Constants::TILE_RENDERED_SIZE, Constants::TILE_RENDERED_SIZE,&gSpriteClips[ m_CurrentSprite ] );
+    }
+
 }
 
 void Tile::setSprite( TileSprite sprite )

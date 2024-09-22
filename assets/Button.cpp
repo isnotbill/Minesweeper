@@ -10,8 +10,11 @@
 #include "Button.h"
 #include "globals.h"
 
-Button::Button(int x, int y)
+
+Button::Button(int x, int y, int w, int h)
     : m_coordinate{x,y}
+    , m_width {w}
+    , m_height {h}
 {}
 
 bool Button::setTexture( std::string path )
@@ -25,30 +28,30 @@ void Button::render()
     
     SDL_Rect renderTile;
     
-    renderTile.w = Constants::TILE_RENDERED_SIZE * 2;
-    renderTile.h = Constants::TILE_RENDERED_SIZE * 2;
+    renderTile.w = m_width;
+    renderTile.h = m_height;
     
     if(gWindow.isFullScreen() )
     {
-        renderTile.x = m_coordinate.x + Constants::BOARD_OFFSET - Constants::TILE_RENDERED_SIZE;
-        renderTile.y = m_coordinate.y + Constants::TILE_RENDERED_SIZE;
+        renderTile.x = m_coordinate.x + Constants::BOARD_OFFSET;
+        renderTile.y = m_coordinate.y;
     }
     else
     {
-        renderTile.x = m_coordinate.x - Constants::TILE_RENDERED_SIZE;
-        renderTile.y = m_coordinate.y + Constants::TILE_RENDERED_SIZE;
+        renderTile.x = m_coordinate.x;
+        renderTile.y = m_coordinate.y;
     }
 
     // Render to screen
     SDL_RenderCopy( gRenderer, m_texture.getTexture(), NULL, &renderTile );
-
     
 }
 
-/*
-void Button::handleEvent(SDL_Event* e)
+
+int Button::handleEvent(SDL_Event* e)
 {
-    if(!fullscreen)
+    int offset = Constants::BOARD_OFFSET;
+    if(!gWindow.isFullScreen())
     {
         offset = 0;
     }
@@ -64,22 +67,22 @@ void Button::handleEvent(SDL_Event* e)
         bool inside = true;
 
         // Mouse is left of the tile
-        if( x < m_coordinate.x * Constants::TILE_RENDERED_SIZE + offset)
+        if( x < m_coordinate.x + offset)
         {
             inside = false;
         }
         // Mouse is right of the tile
-        else if( x > m_coordinate.x * Constants::TILE_RENDERED_SIZE + Constants::TILE_RENDERED_SIZE + offset)
+        else if( x > m_coordinate.x + m_width + offset)
         {
             inside = false;
         }
         // Mouse above the tile
-        else if( y < m_coordinate.y * Constants::TILE_RENDERED_SIZE)
+        else if( y < m_coordinate.y)
         {
             inside = false;
         }
         // Mouse below the tile
-        else if( y > m_coordinate.y * Constants::TILE_RENDERED_SIZE + Constants::TILE_RENDERED_SIZE)
+        else if( y > m_coordinate.y + m_width)
         {
             inside = false;
         }
@@ -87,31 +90,14 @@ void Button::handleEvent(SDL_Event* e)
         if( inside )
         {
             // For simplicity, toggle between hidden and revealed
-            if( m_CurrentSprite == TILE_SPRITE_HIDDEN )
+            if(e->button.button == SDL_BUTTON_LEFT)
             {
-                if( e->button.button == SDL_BUTTON_LEFT )
-                {
-
-                }
-                if( e->button.button == SDL_BUTTON_RIGHT )
-                {
-                    m_CurrentSprite = TILE_SPRITE_MARKED;
-                    Mix_PlayChannel( -1, gFlagSound, 0 );                    
-                }
-            }
-            
-            else if(m_CurrentSprite == TILE_SPRITE_MARKED)
-            {
-                if( e->button.button == SDL_BUTTON_RIGHT )
-                {
-                    m_CurrentSprite = TILE_SPRITE_HIDDEN;
-                    Mix_PlayChannel( -1, gFlagSound, 0 );                    
-                }
+                std::cout << "Left clicked" << '\n';
+                return SDL_BUTTON_LEFT;
             }
             
         }
-
     }
+    return -1;
     
 }
-*/

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string>
 
+
 // Texture wrapper class
 class Texture
 {
@@ -23,12 +24,14 @@ class Texture
         void free();
 
         // Renders texture at given point
-        void render( int x, int y, SDL_Rect* clip = NULL );
+        void render( int x, int y, int w, int h, SDL_Rect* clip = NULL );
 
         // Gets image dimensions
         int getWidth();
         int getHeight();
         SDL_Texture* getTexture() const { return mTexture; }
+
+        void setAlpha(Uint8 alpha); // Set alpha value
 
     private:
         // The actual hardware texture
