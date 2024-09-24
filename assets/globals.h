@@ -22,9 +22,12 @@ extern SDL_Renderer* gRenderer;
 extern SDL_Rect gSpriteClips[ TILE_SPRITE_TOTAL ];
 extern Texture gTileSpriteSheetTexture;
 
-
 // Game Board
 extern Board gBoard;
 
 // Try again button 384x384
 extern Button gTryAgainButton;
+
+// Rendering variables
+extern int gTileSize;
+extern int gOffset;

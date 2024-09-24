@@ -23,24 +23,23 @@ bool Button::setTexture( std::string path )
     return ( m_texture.loadFromFile( path.c_str() ) );
 }
 
-void Button::render()
+void Button::render(int x, int y, int w, int h)
 {
     
     SDL_Rect renderTile;
+
+    m_coordinate.x = x + gOffset;
+    m_coordinate.y = y;
+
+    m_width = w;
+    m_height = h;
     
-    renderTile.w = m_width;
-    renderTile.h = m_height;
+    renderTile.w = w;
+    renderTile.h = h;
     
-    if(gWindow.isFullScreen() )
-    {
-        renderTile.x = m_coordinate.x + Constants::BOARD_OFFSET;
-        renderTile.y = m_coordinate.y;
-    }
-    else
-    {
-        renderTile.x = m_coordinate.x;
-        renderTile.y = m_coordinate.y;
-    }
+    renderTile.x = x + gOffset;
+    renderTile.y = y;
+
 
     // Render to screen
     SDL_RenderCopy( gRenderer, m_texture.getTexture(), NULL, &renderTile );
@@ -50,12 +49,6 @@ void Button::render()
 
 int Button::handleEvent(SDL_Event* e)
 {
-    int offset = Constants::BOARD_OFFSET;
-    if(!gWindow.isFullScreen())
-    {
-        offset = 0;
-    }
-
     // If mouse event happened
     if( e->type == SDL_MOUSEBUTTONDOWN )
     {
@@ -67,12 +60,12 @@ int Button::handleEvent(SDL_Event* e)
         bool inside = true;
 
         // Mouse is left of the tile
-        if( x < m_coordinate.x + offset)
+        if( x < m_coordinate.x)
         {
             inside = false;
         }
         // Mouse is right of the tile
-        else if( x > m_coordinate.x + m_width + offset)
+        else if( x > m_coordinate.x + m_width)
         {
             inside = false;
         }
@@ -82,7 +75,7 @@ int Button::handleEvent(SDL_Event* e)
             inside = false;
         }
         // Mouse below the tile
-        else if( y > m_coordinate.y + m_width)
+        else if( y > m_coordinate.y + m_height)
         {
             inside = false;
         }

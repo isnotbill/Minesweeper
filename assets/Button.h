@@ -22,7 +22,7 @@ public:
 
     bool setTexture( std::string path );
 
-    void render();
+    void render(int x, int y, int w, int h);
 
     int handleEvent(SDL_Event*);
 

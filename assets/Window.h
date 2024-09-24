@@ -35,7 +35,6 @@ class LWindow
         bool hasMouseFocus();
         bool hasKeyboardFocus();
         bool isMinimized();
-        bool isFullScreen();
 
     private:
         //LWindow data

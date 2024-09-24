@@ -65,7 +65,7 @@ public:
     void setPosition(int x, int y);
 
     // Handles mouse event
-    std::optional<Tile*> handleEvent( SDL_Event* e, int, bool );
+    std::optional<Tile*> handleEvent( SDL_Event* e);
 
     // Shows tile sprite
     void render();
@@ -75,8 +75,6 @@ public:
 
     // Gets the current sprite
     TileSprite getSprite() const {return m_CurrentSprite;}
-
-    void setAlpha(Uint8 alpha);
 
     bool getRevealed() const {return m_Revealed;}
     void setRevealed(bool boolean) {m_Revealed = boolean;}
@@ -88,7 +86,6 @@ protected:
 
     bool m_Revealed{false}; // Check if the tile is revealed as a NumberTile
 
-    Uint8 mAlpha = 255; // Fully opaque by default
 };
 
 class Bomb : public Tile 

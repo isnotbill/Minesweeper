@@ -195,13 +195,13 @@ void Board::showBombs()
 }
 
 
-void Board::handleEvents(SDL_Event* e, int offset, bool fullscreen)
+void Board::handleEvents(SDL_Event* e)
 {
     for(std::size_t j = 0; j < Constants::BOARD_SIZE; j++)
     {
         for(std::size_t i = 0; i < Constants::BOARD_SIZE; i++)
         {
-            std::optional<Tile*> tile = m_Board[j][i]->handleEvent(e, offset, fullscreen);
+            std::optional<Tile*> tile = m_Board[j][i]->handleEvent(e);
             if( tile )
             {
                 if(tile.value()->isBomb())

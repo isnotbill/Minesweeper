@@ -84,7 +84,7 @@ public:
     
     void showBombs();
 
-    void handleEvents(SDL_Event* e, int, bool);
+    void handleEvents(SDL_Event* e);
 
     void renderTiles();
 

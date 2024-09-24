@@ -44,12 +44,8 @@ void Tile::setPosition( int x, int y )
     m_coordinate.y = y;
 }
 
-std::optional<Tile*> Tile::handleEvent( SDL_Event* e, int offset, bool fullscreen )
+std::optional<Tile*> Tile::handleEvent( SDL_Event* e )
 {
-    if(!fullscreen)
-    {
-        offset = 0;
-    }
 
     // If mouse event happened
     if( e->type == SDL_MOUSEBUTTONDOWN )
@@ -62,22 +58,22 @@ std::optional<Tile*> Tile::handleEvent( SDL_Event* e, int offset, bool fullscree
         bool inside = true;
 
         // Mouse is left of the tile
-        if( x < m_coordinate.x * Constants::TILE_RENDERED_SIZE + offset)
+        if( x < m_coordinate.x * gTileSize + gOffset)
         {
             inside = false;
         }
         // Mouse is right of the tile
-        else if( x > m_coordinate.x * Constants::TILE_RENDERED_SIZE + Constants::TILE_RENDERED_SIZE + offset)
+        else if( x > m_coordinate.x * gTileSize + gTileSize + gOffset)
         {
             inside = false;
         }
         // Mouse above the tile
-        else if( y < m_coordinate.y * Constants::TILE_RENDERED_SIZE)
+        else if( y < m_coordinate.y * gTileSize)
         {
             inside = false;
         }
         // Mouse below the tile
-        else if( y > m_coordinate.y * Constants::TILE_RENDERED_SIZE + Constants::TILE_RENDERED_SIZE)
+        else if( y > m_coordinate.y * gTileSize + gTileSize)
         {
             inside = false;
         }
@@ -91,13 +87,6 @@ std::optional<Tile*> Tile::handleEvent( SDL_Event* e, int offset, bool fullscree
             {
                 if( e->button.button == SDL_BUTTON_LEFT )
                 {
-                    // You can set the revealed sprite based on your game logic
-                    //m_CurrentSprite = TILE_SPRITE_REVEALED_0;
-                    //Board::reveal(location )
-                    //-> TILE_SPRITE_REVEALED_0; // Example: revealed with 0 adjacent mines
-                    // return true;
-                    // return *this;
-                    //std::cout<< "Returning this" << " " << m_Revealed;
                     return this;
                 }
                 if( e->button.button == SDL_BUTTON_RIGHT )
@@ -125,15 +114,7 @@ std::optional<Tile*> Tile::handleEvent( SDL_Event* e, int offset, bool fullscree
 void Tile::render()
 {
     // Show current tile sprite
-    if(gWindow.isFullScreen() )
-    {
-        gTileSpriteSheetTexture.render( m_coordinate.x * Constants::TILE_RENDERED_SIZE + Constants::BOARD_OFFSET, m_coordinate.y * Constants::TILE_RENDERED_SIZE, Constants::TILE_RENDERED_SIZE, Constants::TILE_RENDERED_SIZE,&gSpriteClips[ m_CurrentSprite ] );
-    }
-    else
-    {
-        
-        gTileSpriteSheetTexture.render( m_coordinate.x * Constants::TILE_RENDERED_SIZE, m_coordinate.y * Constants::TILE_RENDERED_SIZE, Constants::TILE_RENDERED_SIZE, Constants::TILE_RENDERED_SIZE,&gSpriteClips[ m_CurrentSprite ] );
-    }
+    gTileSpriteSheetTexture.render( m_coordinate.x * gTileSize + gOffset, m_coordinate.y * gTileSize, gTileSize, gTileSize,&gSpriteClips[ m_CurrentSprite ] );
 
 }
 
