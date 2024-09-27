@@ -4,6 +4,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 
+// Extern to use it in different files without violating ODR
 
 extern Mix_Chunk* gFlagSound;
 extern Mix_Chunk* gClickSound;

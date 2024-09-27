@@ -12,11 +12,6 @@ bool Bomb::isBomb()
     return true;
 };
 
-void Bomb::display()
-{
-    std::cout << m_coordinate << " is a Bomb.\n";
-}
-
 // NumberedTile class definitions
 int NumberedTile::getSurrounding() const // gets m_bombSurrounding
 {
@@ -28,22 +23,21 @@ bool NumberedTile::isBomb()
     return false;
 };
 
-void NumberedTile::display()
+NumberedTile& NumberedTile::operator++()
 {
-    std::cout << m_coordinate << "with " << m_bombSurrounding << " bombs surrounding" << " is a NumberedTile.\n";
-};
+    ++m_bombSurrounding;
 
-void NumberedTile::increment()
-{
-    m_bombSurrounding = m_bombSurrounding + 1;
+    return *this;
 }
 
+// Tile class definitions
 void Tile::setPosition( int x, int y )
 {
     m_coordinate.x = x;
     m_coordinate.y = y;
 }
 
+// Member function gets called everytime there is any mouse event
 std::optional<Tile*> Tile::handleEvent( SDL_Event* e )
 {
 
@@ -89,19 +83,25 @@ std::optional<Tile*> Tile::handleEvent( SDL_Event* e )
                 {
                     return this;
                 }
-                if( e->button.button == SDL_BUTTON_RIGHT )
+                else if( e->button.button == SDL_BUTTON_RIGHT )
                 {
                     m_CurrentSprite = TILE_SPRITE_MARKED;
                     Mix_PlayChannel( -1, gFlagSound, 0 );                    
                 }
             }
-            
             else if(m_CurrentSprite == TILE_SPRITE_MARKED)
             {
                 if( e->button.button == SDL_BUTTON_RIGHT )
                 {
                     m_CurrentSprite = TILE_SPRITE_HIDDEN;
                     Mix_PlayChannel( -1, gFlagSound, 0 );                    
+                }
+            }
+            else
+            {
+                if( e->button.button == SDL_BUTTON_MIDDLE )
+                {
+                    return this;
                 }
             }
             
@@ -111,6 +111,7 @@ std::optional<Tile*> Tile::handleEvent( SDL_Event* e )
     return std::nullopt;
 }
 
+//Render the tile
 void Tile::render()
 {
     // Show current tile sprite
@@ -118,6 +119,7 @@ void Tile::render()
 
 }
 
+// Mutator to change the current sprite of the tile
 void Tile::setSprite( TileSprite sprite )
 {
     m_CurrentSprite = sprite;

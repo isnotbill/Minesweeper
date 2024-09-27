@@ -12,13 +12,14 @@
 #include "Texture.h"
 #include "Tile.h"
 
+//Board class represents the Minesweeper board
 class Board
 {
 public:  
-    //Board constructor to specific size
+    // Default constructor
     Board();
 
-
+    // Destructor, deallocates vector
     ~Board()
     {
         for(std::size_t j = 0; j < Constants::BOARD_SIZE; j++)
@@ -32,6 +33,7 @@ public:
         }
     }
 
+    // Move constructor
     Board(Board&& board)
     {
         for(std::size_t j = 0; j < Constants::BOARD_SIZE; j++)
@@ -44,6 +46,7 @@ public:
         }
     }
 
+    // Move assignment
     Board& operator=(Board&& other) noexcept 
     {
         if (this != &other) {
@@ -69,34 +72,35 @@ public:
         return *this;
     }
     
+    // Accessors
     std::vector< std::vector<Tile*> > getBoard() const {return m_Board;}
     bool getGameOver() const {return m_gameOver;}
 
-    //Creating board
+    // Creating board
     void randomizeBombs(Point2D point);
     void incrementSurrounding( int x , int y);
 
-    //Check if bomb
-    bool illegalIncrement(int x, int y);
+    // Validity checking
+    bool outOfBounds(Point2D);
+    int countFlags(Point2D);
 
-    //Reveal a clicked tile
+    // Revealing tiles
     void reveal(Point2D);
-    
     void showBombs();
 
+    // SDL2 Implementation
     void handleEvents(SDL_Event* e);
-
     void renderTiles();
 
+    // Win checking
     bool win();
 
 private:
-    //2D array of board size
-    std::vector< std::vector<Tile*> > m_Board;
+    std::vector< std::vector<Tile*> > m_Board; // 2D array of board size
     bool m_firstClick{true}; // False if the player already clicked before hand.
-    bool m_gameOver{false};
-    int m_tilesRevealed{0};
-    int m_currentTilesRevealed{0};
+    bool m_gameOver{false}; // Game over flag
+    int m_tilesRevealed{0}; // Number of tiles revealed
+    int m_currentTilesRevealed{0}; // Numbered of tiles revealed in a single sequence
 };
 
 #endif

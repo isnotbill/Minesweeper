@@ -10,9 +10,8 @@ namespace Constants
     constexpr int TILE_RENDERED_SIZE = 64; // Pixel size of each tile
     constexpr int BOARD_SIZE = 16; // dimensions nxn
     constexpr int BOMBS_MAX = 40; // Number of bombs
-    //constexpr int BOARD_OFFSET = 448;
 
-    // Screen dimension constants
+    // Starting window dimension constants
     constexpr int SCREEN_WIDTH = 900;
     constexpr int SCREEN_HEIGHT = 900;
 }

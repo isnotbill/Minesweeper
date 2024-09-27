@@ -4,6 +4,7 @@
 #include <SDL2/SDL_image.h>
 #include <stdio.h>
 #include <string>
+#include <optional>
 #include "Constants.h"
 #include "Tile.h"
 #include "Texture.h"
@@ -19,7 +20,6 @@ Button::Button(int x, int y, int w, int h)
 
 bool Button::setTexture( std::string path )
 {
-
     return ( m_texture.loadFromFile( path.c_str() ) );
 }
 
@@ -46,8 +46,13 @@ void Button::render(int x, int y, int w, int h)
     
 }
 
+// Free texture
+void Button::free()
+{
+    m_texture.free();
+}
 
-int Button::handleEvent(SDL_Event* e)
+std::optional<int> Button::handleEvent(SDL_Event* e)
 {
     // If mouse event happened
     if( e->type == SDL_MOUSEBUTTONDOWN )
@@ -91,6 +96,5 @@ int Button::handleEvent(SDL_Event* e)
             
         }
     }
-    return -1;
-    
+    return std::nullopt;
 }

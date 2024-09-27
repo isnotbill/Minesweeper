@@ -1,9 +1,10 @@
 #include "Window.h"
 #include "globals.h"
 
+// Initialize non-existant window
 LWindow::LWindow()
 {
-    //Initialize non-existant window
+
     mWindow = NULL;
     mMouseFocus = false;
     mKeyboardFocus = false;
@@ -13,9 +14,9 @@ LWindow::LWindow()
     mHeight = 0;
 }
 
+// Create window
 bool LWindow::init()
 {
-    //Create window
     mWindow = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
     if( mWindow != NULL )
     {
@@ -30,11 +31,13 @@ bool LWindow::init()
     return mWindow != NULL;
 }
 
+// Create a renderer
 SDL_Renderer* LWindow::createRenderer()
 {
     return SDL_CreateRenderer( mWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
 }
 
+// Handle window events
 void LWindow::handleEvent( SDL_Event& e )
 {
     //Window event occured
@@ -120,32 +123,15 @@ void LWindow::handleEvent( SDL_Event& e )
     }
 }
 
+// Free window
 void LWindow::free()
 {
     SDL_DestroyWindow(mWindow);
 }
 
-int LWindow::getWidth()
-{
-    return mWidth;
-}
-
-int LWindow::getHeight()
-{
-    return mHeight;
-}
-
-bool LWindow::hasMouseFocus()
-{
-    return mMouseFocus;
-}
-
-bool LWindow::hasKeyboardFocus()
-{
-    return mKeyboardFocus;
-}
-
-bool LWindow::isMinimized()
-{
-    return mMinimized;
-}
+// Accessors
+int LWindow::getWidth() { return mWidth; }
+int LWindow::getHeight() { return mHeight; }
+bool LWindow::hasMouseFocus() { return mMouseFocus; }
+bool LWindow::hasKeyboardFocus() { return mKeyboardFocus; }
+bool LWindow::isMinimized() { return mMinimized; }

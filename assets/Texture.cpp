@@ -2,20 +2,22 @@
 #include "Constants.h"
 #include "globals.h"
 
+// Initialize texture
 Texture::Texture()
 {
-    // Initialize
     mTexture = NULL;
     mWidth = 0;
     mHeight = 0;
 }
 
+// Deallocates texture
 Texture::~Texture()
 {
     // Deallocate
     free();
 }
 
+// Load texture from resource
 bool Texture::loadFromFile( std::string path )
 {
     // Get rid of preexisting texture
@@ -54,6 +56,7 @@ bool Texture::loadFromFile( std::string path )
     return mTexture != NULL;
 }
 
+// Free texture
 void Texture::free()
 {
     // Free texture if it exists
@@ -66,6 +69,7 @@ void Texture::free()
     }
 }
 
+// Render the texture
 void Texture::render( int x, int y, int w, int h, SDL_Rect* clip )
 {
     // Set rendering space and render to screen
@@ -81,16 +85,11 @@ void Texture::render( int x, int y, int w, int h, SDL_Rect* clip )
     SDL_RenderCopy( gRenderer, mTexture, clip, &renderQuad );
 }
 
-int Texture::getWidth()
-{
-    return mWidth;
-}
+// Accessors
+int Texture::getWidth() { return mWidth; }
+int Texture::getHeight(){ return mHeight; }
 
-int Texture::getHeight()
-{
-    return mHeight;
-}
-
+// Set opacity
 void Texture::setAlpha(Uint8 alpha)
 {
     // Modulate texture alpha

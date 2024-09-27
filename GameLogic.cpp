@@ -10,7 +10,6 @@
 #include "assets/Window.h"
 #include "assets/Button.h"
 
-
 // Starts up SDL and creates window
 bool init();
 
@@ -176,6 +175,7 @@ bool loadMedia()
         gSpriteClips[ TILE_SPRITE_REVEALED_0 ].w = Constants::TILE_WIDTH;
         gSpriteClips[ TILE_SPRITE_REVEALED_0 ].h = Constants::TILE_HEIGHT;
 
+
         // TILE_SPRITE_REVEALED 1 TO 8
         for( int i = 2; i < 10; i++ )
         {
@@ -223,10 +223,17 @@ void close()
 {
     // Free loaded images
     gTileSpriteSheetTexture.free();
+    gTryAgainButton.free();
 
     // Free audio
 	Mix_FreeChunk(gFlagSound);
     gFlagSound = nullptr;
+    gClickSound = nullptr;
+    gRevealSound =nullptr;
+    gBombSound = nullptr;
+    gVictorySound = nullptr;
+    gDefeatSound = nullptr;
+
     // Destroy window
     SDL_DestroyRenderer( gRenderer );
     gWindow.free();
@@ -296,6 +303,8 @@ void start()
                             startFadeOut = true;
                             overlayAlpha = 0;
                         }
+                        
+                        // Reset board if retry button is clicked
                         if(gTryAgainButton.handleEvent( &e ) == SDL_BUTTON_LEFT)
                         {  
                             Mix_PlayChannel(-1, gClickSound, 0);
@@ -325,7 +334,7 @@ void start()
                     if (gBoard.getGameOver())
                     {
                         gBoard.showBombs();
-                        // Increase overlay alpha value
+                        // Increase overlay alpha value for every render frame
                         if (overlayAlpha < maxOverlayAlpha) {
                             overlayAlpha = (overlayAlpha + fadeOutSpeed > maxOverlayAlpha) ? maxOverlayAlpha : overlayAlpha + fadeOutSpeed;
                         }
@@ -342,7 +351,8 @@ void start()
                         // Once fade-out is complete, render the retry button
                         if (overlayAlpha >= maxOverlayAlpha) {
                             gTryAgainButton.render(gTileSize * 7, gWindow.getHeight()/2 + gTileSize * 2, gTileSize * 2, gTileSize * 2);
-                            if(win)
+                            
+                            if(win) // Render either win texture or lose texture
                             {
                                 gWinTexture.render(gTileSize * 5.5 + gOffset, gWindow.getHeight()/2 - gTileSize * 3.5, gTileSize * 5, gTileSize * 5, NULL);
                             }
@@ -350,7 +360,8 @@ void start()
                             {
                                 gLoseTexture.render(gTileSize * 6 + gOffset, gWindow.getHeight()/2 - gTileSize * 3, gTileSize * 4, gTileSize * 4, NULL);
                             }
-                            if (!soundPlayed)
+                            
+                            if (!soundPlayed) // Play sound once
                             {
                                 soundPlayed = true;
                                 if (win)

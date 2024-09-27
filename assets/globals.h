@@ -25,7 +25,7 @@ extern Texture gTileSpriteSheetTexture;
 // Game Board
 extern Board gBoard;
 
-// Try again button 384x384
+// Try again button (384x384)
 extern Button gTryAgainButton;
 
 // Rendering variables
